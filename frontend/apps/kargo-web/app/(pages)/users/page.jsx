@@ -8,13 +8,38 @@ export default function UsersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
 
-  // DRY Array for User Data
-  const activeUsers = [
+  // 1. Moved Users to State so the UI updates when we add a new one
+  const [users, setUsers] = useState([
     { name: "Marcus Chen", uid: "UID-8829-KARGO", role: "Inspector", status: "Online", time: "2 mins ago" },
     { name: "Elias Thorne", uid: "UID-4412-KARGO", role: "Manager", status: "Online", time: "14 mins ago" },
     { name: "Sarah Jenkins", uid: "UID-9021-KARGO", role: "Inspector", status: "Offline", time: "1 hour ago" },
     { name: "Robert Lang", uid: "UID-1102-KARGO", role: "Manager", status: "Online", time: "3 hours ago" }
-  ];
+  ]);
+
+  // 2. State for the Form Inputs
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+
+  const handleAddUser = (e) => {
+    e.preventDefault();
+    
+    // Create the new user object
+    const newUser = {
+      name: formData.name,
+      uid: `UID-${Math.floor(1000 + Math.random() * 9000)}-KARGO`,
+      // Capitalize the first letter of the role for the table
+      role: selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1),
+      status: "Online",
+      time: "Just now"
+    };
+
+    // 3. Update the list and close modal
+    setUsers([newUser, ...users]); 
+    setIsModalOpen(false);
+    
+    // Reset form fields
+    setFormData({ name: '', email: '', phone: '' }); 
+    setSelectedRole(""); 
+  };
 
   return (
     <div className="flex min-h-screen bg-[#f9f9f9] relative">
@@ -74,14 +99,15 @@ export default function UsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f3f3f3]">
-                {activeUsers.map((user, idx) => (
+                {/* Map over the 'users' state array */}
+                {users.map((user, idx) => (
                   <tr key={idx} className="hover:bg-[#f3f3f3]/50 transition-colors group">
                     <td className="px-8 py-5">
                       <div className="font-bold text-[#1a1c1c] font-body">{user.name}</div>
                       <div className="text-[10px] text-[#737780] uppercase font-mono">{user.uid}</div>
                     </td>
                     <td className="px-6 py-5">
-                      {user.role === 'Inspector' ? (
+                      {user.role.toLowerCase() === 'inspector' ? (
                         <span className="px-3 py-1 bg-[#3a5f94] text-white text-[10px] font-black uppercase tracking-widest rounded-full">{user.role}</span>
                       ) : (
                         <span className="px-3 py-1 bg-[#e2e2e2] text-[#43474f] text-[10px] font-black uppercase tracking-widest rounded-full">{user.role}</span>
@@ -114,7 +140,7 @@ export default function UsersPage() {
           </div>
 
           <div className="p-6 bg-[#f3f3f3] border-t border-[#c3c6d1]/30 flex items-center justify-between">
-            <span className="text-xs font-medium text-[#737780]">Displaying 1-4 of 28 users</span>
+            <span className="text-xs font-medium text-[#737780]">Displaying 1-{users.length} of {users.length} users</span>
             <div className="flex gap-2">
               <button className="w-10 h-10 flex items-center justify-center bg-white text-[#737780] border border-[#c3c6d1]/50 hover:bg-gray-50 transition-colors">
                 <span className="material-symbols-outlined">chevron_left</span>
@@ -148,24 +174,45 @@ export default function UsersPage() {
             </div>
 
             {/* Modal Form Body */}
-            <form className="p-8 space-y-8" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
+            <form className="p-8 space-y-8" onSubmit={handleAddUser}>
               <div className="space-y-8">
                 
                 {/* Full Name */}
                 <div className="space-y-2">
                   <label className="font-headline text-xs font-bold text-[#43474f] uppercase tracking-wider block">Full Name</label>
-                  <input className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-3 font-body text-[#1a1c1c] focus:ring-0 focus:border-b-2 focus:border-[#3a5f94] transition-all placeholder:text-[#737780]/50" placeholder="e.g. Elena Rodriguez" type="text" required />
+                  <input 
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-3 font-body text-[#1a1c1c] focus:ring-0 focus:border-b-2 focus:border-[#3a5f94] transition-all placeholder:text-[#737780]/50" 
+                    placeholder="e.g. Elena Rodriguez" 
+                    type="text" 
+                    required 
+                  />
                 </div>
 
                 {/* Email & Phone Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="font-headline text-xs font-bold text-[#43474f] uppercase tracking-wider block">Email Address</label>
-                    <input className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-3 font-body text-[#1a1c1c] focus:ring-0 focus:border-b-2 focus:border-[#3a5f94] transition-all placeholder:text-[#737780]/50" placeholder="name@kargo.ind" type="email" required />
+                    <input 
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-3 font-body text-[#1a1c1c] focus:ring-0 focus:border-b-2 focus:border-[#3a5f94] transition-all placeholder:text-[#737780]/50" 
+                      placeholder="name@kargo.ind" 
+                      type="email" 
+                      required 
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="font-headline text-xs font-bold text-[#43474f] uppercase tracking-wider block">Phone Number</label>
-                    <input className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-3 font-body text-[#1a1c1c] focus:ring-0 focus:border-b-2 focus:border-[#3a5f94] transition-all placeholder:text-[#737780]/50" placeholder="+1 (555) 000-0000" type="tel" />
+                    {/* SA Phone Number Placeholder */}
+                    <input 
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-3 font-body text-[#1a1c1c] focus:ring-0 focus:border-b-2 focus:border-[#3a5f94] transition-all placeholder:text-[#737780]/50" 
+                      placeholder="+27 72 000 0000" 
+                      type="tel" 
+                    />
                   </div>
                 </div>
 
@@ -179,22 +226,23 @@ export default function UsersPage() {
                     required
                   >
                     <option value="" disabled>Choose access level...</option>
-                    <option value="inspector">Inspector</option>
-                    <option value="management">Management</option>
+                    <option value="Inspector">Inspector</option>
+                    <option value="Management">Management</option>
                   </select>
                 </div>
 
                 {/* Conditional Field: Inspector Security PIN */}
-                {selectedRole === 'inspector' && (
+                {/* using .toLowerCase() makes it foolproof against capitalization issues */}
+                {selectedRole.toLowerCase() === 'inspector' && (
                   <div className="space-y-2 bg-[#e8e8e8]/50 p-6 rounded-xl border border-[#c3c6d1]/20">
                     <label className="font-headline text-xs font-bold text-[#43474f] uppercase tracking-wider block">Security PIN (Inspector)</label>
-                    <input className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-4 font-headline text-2xl tracking-[1em] text-center text-[#1a1c1c] focus:ring-0 focus:border-b-2 focus:border-[#3a5f94] transition-all" maxLength="4" placeholder="0000" type="password" required />
+                    <input className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-4 font-headline text-2xl tracking-[1em] text-center text-[#1a1c1c] focus:ring-0 focus:border-b-2 focus:border-[#3a5f94] transition-all" maxLength={4} placeholder="0000" type="password" required />
                     <p className="text-[10px] text-[#737780] italic">Enter a unique 4-digit code for terminal handheld scanners.</p>
                   </div>
                 )}
 
                 {/* Conditional Field: Management Password */}
-                {selectedRole === 'management' && (
+                {selectedRole.toLowerCase() === 'management' && (
                   <div className="space-y-2 bg-[#e8e8e8]/50 p-6 rounded-xl border border-[#c3c6d1]/20">
                     <label className="font-headline text-xs font-bold text-[#43474f] uppercase tracking-wider block">Management Password</label>
                     <input className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-3 font-body text-[#1a1c1c] focus:ring-0 focus:border-b-2 focus:border-[#3a5f94] transition-all" placeholder="Enter secure password" type="password" required />
