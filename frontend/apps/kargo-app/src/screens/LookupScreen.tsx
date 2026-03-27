@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons'; // Expo's built-in icon library
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView, TouchableWithoutFeedback } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons'; 
 import { theme } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,82 +8,119 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 
 export default function LookupScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    
+    // State to manage the visibility of the profile menu
+    const [showMenu, setShowMenu] = useState(false);
+
+    // Logout function: Clears the menu and resets the stack to the Login screen
+    const handleLogout = () => {
+        setShowMenu(false);
+        // Using replace() prevents the user from hitting the Android 'back' button to re-enter
+        navigation.replace('Login'); 
+    };
+
   return (
-    <SafeAreaView style={styles.container}>
-      
-      {/* --- TOP APP BAR --- */}
-      <View style={styles.topBar}>
-        <Text style={styles.logoText}>KARGO</Text>
-        <View style={styles.userAvatar}>
-          <MaterialIcons name="person" size={20} color={theme.colors.primary} />
-        </View>
-      </View>
-
-      {/* --- MAIN CONTENT (Centered) --- */}
-      <View style={styles.mainContent}>
+    // TouchableWithoutFeedback lets us tap anywhere else on the screen to close the menu
+    <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
+      <SafeAreaView style={styles.container}>
         
-        {/* Hero Header */}
-        <View style={styles.headerSection}>
-          <Text style={styles.heroText}>LOOKUP</Text>
-          <Text style={styles.heroText}>CONTAINER</Text>
+        {/* --- TOP APP BAR --- */}
+        <View style={styles.topBar}>
+          <Text style={styles.logoText}>KARGO</Text>
           
-          <View style={styles.subtitleRow}>
-            <View style={styles.subtitleLine} />
-            <Text style={styles.subtitleText}>GLOBAL LOGISTICS REGISTRY / REAL-TIME TELEMETRY</Text>
-            <View style={styles.subtitleLine} />
+          {/* Profile Icon - wrapped to toggle the menu */}
+          <View>
+            <TouchableOpacity 
+                style={styles.userAvatar}
+                onPress={() => setShowMenu(!showMenu)}
+            >
+              <MaterialIcons name="person" size={20} color={theme.colors.primary} />
+            </TouchableOpacity>
+
+            {/* --- PROFILE DROPDOWN MENU --- */}
+            {showMenu && (
+                <View style={styles.dropdownMenu}>
+                  <TouchableOpacity style={styles.dropdownItem} onPress={() => { setShowMenu(false); /* Add Settings Nav here */ }}>
+                    <Text style={styles.dropdownText}>Settings</Text>
+                  </TouchableOpacity>
+                  
+                  <View style={styles.divider} />
+                  
+                  <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout}>
+                    {/* Re-using your specific bright red for the logout text to match the alert vibe */}
+                    <Text style={[styles.dropdownText, { color: '#ff4d4d' }]}>Log out</Text>
+                  </TouchableOpacity>
+                </View>
+            )}
           </View>
         </View>
 
-        {/* Search Bar */}
-        <View style={styles.searchWrapper}>
-          <View style={styles.searchInputContainer}>
-            <MaterialIcons name="search" size={24} color={theme.colors.primary} style={styles.searchIcon} />
-            <TextInput 
-              style={styles.searchInput}
-              placeholder="ENTER CODE"
-              placeholderTextColor="rgba(215, 228, 237, 0.6)" // on-surface-variant/60
-            />
+        {/* --- MAIN CONTENT (Centered) --- */}
+        <View style={styles.mainContent}>
+          
+          {/* Hero Header */}
+          <View style={styles.headerSection}>
+            <Text style={styles.heroText}>LOOKUP</Text>
+            <Text style={styles.heroText}>CONTAINER</Text>
+            
+            <View style={styles.subtitleRow}>
+              <View style={styles.subtitleLine} />
+              <Text style={styles.subtitleText}>GLOBAL LOGISTICS REGISTRY / REAL-TIME TELEMETRY</Text>
+              <View style={styles.subtitleLine} />
+            </View>
           </View>
-         <TouchableOpacity 
-         activeOpacity={0.8} 
-         style={styles.locateButton}
-         onPress={() => navigation.navigate('Inspection')} // <-- ADD THIS
-       >
-         <Text style={styles.locateButtonText}>LOCATE</Text>
-       </TouchableOpacity>
+
+          {/* Search Bar */}
+          <View style={styles.searchWrapper}>
+            <View style={styles.searchInputContainer}>
+              <MaterialIcons name="search" size={24} color={theme.colors.primary} style={styles.searchIcon} />
+              <TextInput 
+                style={styles.searchInput}
+                placeholder="ENTER CODE"
+                placeholderTextColor="rgba(215, 228, 237, 0.6)" 
+              />
+            </View>
+           <TouchableOpacity 
+            activeOpacity={0.8} 
+            style={styles.locateButton}
+            onPress={() => navigation.navigate('Inspection')}
+          >
+            <Text style={styles.locateButtonText}>LOCATE</Text>
+          </TouchableOpacity>
+          </View>
+
         </View>
 
-      </View>
+        {/* --- BOTTOM NAVIGATION --- */}
+        <View style={styles.bottomNav}>
+          <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
+            <MaterialIcons name="search" size={24} color={theme.colors.primary} />
+            <Text style={[styles.navText, styles.navTextActive]}>SEARCH</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.navItem} 
+            onPress={() => navigation.navigate('Drafts')}
+          > 
+            <MaterialIcons name="description" size={24} color="#64748b" /> 
+            <Text style={styles.navText}>DRAFTS</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.navItem}>
+            <MaterialIcons name="history" size={24} color="#64748b" />
+            <Text style={styles.navText}>HISTORY</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* --- BOTTOM NAVIGATION --- */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
-          <MaterialIcons name="search" size={24} color={theme.colors.primary} />
-          <Text style={[styles.navText, styles.navTextActive]}>SEARCH</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.navItem} 
-          onPress={() => navigation.navigate('Drafts')}
-        > {/* <-- The '>' goes here now */}
-          <MaterialIcons name="description" size={24} color="#64748b" /> {/* Slate-500 */}
-          <Text style={styles.navText}>DRAFTS</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="history" size={24} color="#64748b" />
-          <Text style={styles.navText}>HISTORY</Text>
-        </TouchableOpacity>
-      </View>
-
-    </SafeAreaView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.surface, // #09151b
+    backgroundColor: theme.colors.surface, 
   },
   
   // --- TOP BAR ---
@@ -98,18 +135,52 @@ const styles = StyleSheet.create({
   logoText: {
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 24,
-    color: theme.colors.primary, // #ffb3ac
+    color: theme.colors.primary, 
     letterSpacing: -1,
   },
   userAvatar: {
     width: 40,
     height: 40,
-    backgroundColor: theme.colors.surfaceHighest, // #2a363d
+    backgroundColor: theme.colors.surfaceHighest, 
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(88, 65, 63, 0.2)', // outline-variant/20
+    borderColor: 'rgba(88, 65, 63, 0.2)', 
+  },
+
+  // --- DROPDOWN MENU STYLES ---
+  dropdownMenu: {
+    position: 'absolute',
+    top: 50, // Anchored just below the avatar
+    right: 0,
+    backgroundColor: theme.colors.surfaceHighest,
+    borderRadius: 8,
+    padding: 8,
+    minWidth: 140,
+    borderWidth: 1,
+    borderColor: 'rgba(88, 65, 63, 0.2)',
+    // Shadow for elevation
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 10,
+    zIndex: 100,
+  },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  dropdownText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    color: '#d7e4ed', // Matches your search text color
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(215, 228, 237, 0.1)',
+    marginVertical: 4,
   },
 
   // --- MAIN CONTENT ---
@@ -117,7 +188,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingBottom: 80, // Leave room for bottom nav
+    paddingBottom: 80, 
   },
   headerSection: {
     alignItems: 'center',
@@ -125,8 +196,8 @@ const styles = StyleSheet.create({
   },
   heroText: {
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 56, // Scales down slightly for mobile screens
-    color: '#ff4d4d', // Specific bright red from mockup
+    fontSize: 56, 
+    color: '#ff4d4d', 
     letterSpacing: -2,
     lineHeight: 56,
     textShadowColor: 'rgba(255, 77, 77, 0.2)',
@@ -142,12 +213,12 @@ const styles = StyleSheet.create({
   subtitleLine: {
     height: 1,
     width: 32,
-    backgroundColor: 'rgba(255, 179, 172, 0.3)', // primary/30
+    backgroundColor: 'rgba(255, 179, 172, 0.3)', 
   },
   subtitleText: {
     fontFamily: 'Inter_700Bold',
     fontSize: 9,
-    color: 'rgba(224, 191, 188, 0.7)', // on-surface-variant/70
+    color: 'rgba(224, 191, 188, 0.7)', 
     letterSpacing: 4,
   },
 
@@ -180,14 +251,14 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   locateButton: {
-    backgroundColor: '#ff4d4d', // Matches the hero text
+    backgroundColor: '#ff4d4d', 
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
   locateButtonText: {
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 18,
-    color: '#680008', // on-primary
+    color: '#680008', 
     letterSpacing: -0.5,
   },
 
@@ -199,7 +270,7 @@ const styles = StyleSheet.create({
     right: 0,
     height: 80,
     flexDirection: 'row',
-    backgroundColor: theme.colors.surfaceLowest, // #041015
+    backgroundColor: theme.colors.surfaceLowest, 
   },
   navItem: {
     flex: 1,
@@ -207,7 +278,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   navItemActive: {
-    backgroundColor: theme.colors.surfaceHighest, // #2a363d
+    backgroundColor: theme.colors.surfaceHighest, 
   },
   navText: {
     fontFamily: 'Inter_700Bold',
