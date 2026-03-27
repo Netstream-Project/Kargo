@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function ContainerCard({ id, status, updatedAt, photoCount }) {
   // Automatically apply the correct colors based on the container's status
   const getStatusStyles = (statusText) => {
@@ -16,6 +18,7 @@ export default function ContainerCard({ id, status, updatedAt, photoCount }) {
   };
 
   return (
+    <Link href="/containers/report">
     <div className="group bg-surface-container-lowest p-6 rounded-xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer relative overflow-hidden">
       {/* Decorative background curve */}
       <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:scale-150"></div>
@@ -50,5 +53,6 @@ export default function ContainerCard({ id, status, updatedAt, photoCount }) {
         </div>
       </div>
     </div>
+    </Link>
   );
 }
