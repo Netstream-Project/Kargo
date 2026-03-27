@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 // --- MOCK DATA ---
 const reportDetails = {
   id: "KRG-44102",
@@ -214,12 +216,16 @@ export default function ReportPage() {
              <div className="mb-8">Inventory Documentation</div>
              
              <div className="flex flex-col gap-3 mb-8">
-                <button className="w-full py-3 bg-red-900 text-white rounded flex justify-center items-center gap-2 text-xs font-bold uppercase tracking-wider hover:bg-red-950">
-                   <span className="material-symbols-outlined text-sm">image</span> View All Images
-                </button>
-                <button className="w-full py-3 bg-red-900 text-white rounded flex justify-center items-center gap-2 text-xs font-bold uppercase tracking-wider hover:bg-red-950">
-                   <span className="material-symbols-outlined text-sm">list_alt</span> View Supplier List
-                </button>
+                <Link href="/containers/images" className="w-full">
+                    <button className="w-full py-3 bg-red-900 text-white rounded flex justify-center items-center gap-2 text-xs font-bold uppercase tracking-wider hover:bg-red-950">
+                    <span className="material-symbols-outlined text-sm">image</span> View All Images
+                    </button>
+                </Link>
+                <Link href="/containers/list" className="w-full">
+                    <button className="w-full py-3 bg-red-900 text-white rounded flex justify-center items-center gap-2 text-xs font-bold uppercase tracking-wider hover:bg-red-950">
+                    <span className="material-symbols-outlined text-sm">list_alt</span> View Supplier List
+                    </button>
+                </Link>
              </div>
            </div>
 
