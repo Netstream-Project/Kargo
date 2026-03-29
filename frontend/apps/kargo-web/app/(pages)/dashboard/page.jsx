@@ -1,6 +1,6 @@
 import Sidebar from '../../components/global/Sidebar';
-import TopHeader from '../../components/global/TopHeader';
-import ContainerGrid from '../../components/containers/ContainerGrid';
+import TopHeader from '../../components/dashboard/TopHeader';
+import ContainerGrid from '../../components/dashboard/ContainerGrid';
 
 export default function DashboardPage() {
   return (
