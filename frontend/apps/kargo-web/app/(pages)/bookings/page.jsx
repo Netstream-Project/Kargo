@@ -1,7 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import Sidebar from "../../components/global/Sidebar";
 import IncomingVesselsTable from "../../components/bookings/IncomingVesselsTable";
 import OutgoingVesselsTable from "../../components/bookings/OutgoingVesselsTable";
 import InspectionSchedule from "../../components/bookings/InspectionSchedule";
+import NewVesselModal from "../../components/bookings/NewVesselModal";
 
 // --- MOCK DATA ---
 const incomingVessels = [
@@ -22,19 +26,18 @@ const scheduleTasks = [
   { id: "HJIN-44021", slot: "11:00 — 11:45", inspector: "Robert Kane", eta: "Delayed", progress: 15, status: "Delayed" },
   { id: "TEXU-88219", slot: "13:00 — 13:30", inspector: "John Smith", eta: "Departed", progress: 100, status: "Completed" }
 ];
-// -----------------
 
 export default function BookingsPage() {
+  // 1. Add state for the modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className="flex h-screen bg-[#F8F9FA] overflow-hidden">
-      {/* Sidebar Component */}
       <Sidebar />
 
-      {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-[1600px] mx-auto min-h-screen">
           
-          {/* Header Section */}
           <div className="mb-12 flex justify-between items-end">
             <div>
               <h2 className="text-4xl font-black text-[#142026] tracking-tighter uppercase">Bookings</h2>
@@ -45,10 +48,15 @@ export default function BookingsPage() {
             </div>
             
             <div className="flex items-center gap-4">
-              <button className="bg-[#142026] text-white px-6 py-3 rounded font-bold text-xs uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center gap-2 mr-4">
+              {/* 2. Attach the onClick handler to open the modal */}
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="bg-[#142026] text-white px-6 py-3 rounded font-bold text-xs uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center gap-2 mr-4"
+              >
                 <span className="material-symbols-outlined text-sm">add</span> New Vessel
               </button>
               
+              {/* Stats Cards */}
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#3a5f94] flex flex-col">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Vessels</span>
                 <span className="text-2xl font-black text-[#142026]">24</span>
@@ -60,7 +68,6 @@ export default function BookingsPage() {
             </div>
           </div>
 
-          {/* Render the reusable components */}
           <div className="flex flex-col gap-10">
             <IncomingVesselsTable vessels={incomingVessels} />
             <OutgoingVesselsTable vessels={outgoingVessels} />
@@ -69,6 +76,12 @@ export default function BookingsPage() {
 
         </div>
       </main>
+
+      {/* 3. Render the Modal */}
+      <NewVesselModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 }
