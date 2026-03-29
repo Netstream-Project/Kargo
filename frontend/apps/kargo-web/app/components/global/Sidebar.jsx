@@ -10,6 +10,7 @@ export default function Sidebar() {
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
     { name: "Containers", href: "/containers", icon: "local_shipping" },
+    { name: "Bookings", href: "/bookings", icon: "event_available" },
     { name: "Users", href: "/users", icon: "group" },
     { name: "Settings", href: "/settings", icon: "settings" },
   ];

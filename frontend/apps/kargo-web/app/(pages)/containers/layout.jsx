@@ -1,15 +1,27 @@
 import Sidebar from "../../components/global/Sidebar";
+import TopHeader from "../../components/containers/TopHeader";
 
-export default function ContainersLayout({ children }) {
+export default function ContainersLayout({ children, modal }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-container-low text-on-background">
-      {/* The Sidebar will sit fixed on the left */}
+    <div className="flex h-screen bg-[#F8F9FA]">
       <Sidebar />
-      
-      {/* The main content area will take up the rest of the screen and scroll independently */}
-      <main className="flex-1 overflow-y-auto relative">
-        {children}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <div className="px-10 pt-10 pb-6 flex justify-between items-center">
+          <div>
+            <nav className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+              Kargo / Containers
+            </nav>
+            <h1 className="text-5xl font-black tracking-tight text-slate-900">
+              Containers
+            </h1>
+          </div>
+          <TopHeader />
+        </div>
+        <div className="flex-1 overflow-y-auto px-10 pb-10">
+          {children}
+        </div>
       </main>
+      {modal}
     </div>
   );
 }
