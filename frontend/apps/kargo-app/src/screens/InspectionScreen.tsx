@@ -10,6 +10,11 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 
 export default function InspectionScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const handleFinalize = () => {
+      setShowSuccessModal(false);
+      // 👉 This takes them back to Search and triggers the green "Sync" toast!
+      navigation.navigate('Lookup', { showSuccessToast: true } as any);
+    };
 
     // --- STATE MANAGEMENT ---
     const [fullName, setFullName] = useState('');
@@ -19,13 +24,36 @@ export default function InspectionScreen() {
     const [normalContainerImages, setNormalContainerImages] = useState<(string | null)[]>([null, null]);
     const [fullContainerImages, setFullContainerImages] = useState<(string | null)[]>([null, null]);
     
-    // CHANGED: Now dynamic empty arrays that can hold unlimited images
     const [inventoryEvidence1, setInventoryEvidence1] = useState<string[]>([]);
     const [inventoryEvidence2, setInventoryEvidence2] = useState<string[]>([]);
 
-    // --- EXPAND/COLLAPSE STATE ---
     const [isInventory1Expanded, setIsInventory1Expanded] = useState(false);
     const [isInventory2Expanded, setIsInventory2Expanded] = useState(false);
+
+    // 👉 NEW: E-Signature State
+    const [isSigned, setIsSigned] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    // --- NAVIGATION HANDLERS ---
+    const handleSubmitInspection = () => {
+      if (!isSigned) {
+        Alert.alert("Signature Required", "Please provide an authorization signature before submitting.");
+        return;
+      }
+      setShowSuccessModal(true);
+    };
+    
+
+    // 👉 NEW: Saves to draft and goes to Drafts screen with new data
+    const handleSaveDraft = () => {
+      const newDraftData = {
+        id: `KRG-${Math.floor(10000 + Math.random() * 90000)}`,
+        ship: fullName ? `DRIVER: ${fullName.toUpperCase()}` : 'PENDING DRIVER INFO',
+        time: 'JUST NOW',
+        type: 'IN PROGRESS'
+      };
+      navigation.navigate('Drafts', { newDraft: newDraftData } as any);
+    };
 
     // --- IMAGE PICKER ---
     const pickImage = async (callback: (uri: string) => void) => {
@@ -55,14 +83,12 @@ export default function InspectionScreen() {
     };
 
     // --- DYNAMIC ADD & REPLACE LOGIC ---
-    // Appends a brand new image to the end of the list
     const handleAddDynamicEvidence = (setEvidenceArray: React.Dispatch<React.SetStateAction<string[]>>) => {
         pickImage((uri) => {
             setEvidenceArray(prev => [...prev, uri]);
         });
     };
 
-    // Replaces an existing image if they tap on one they already uploaded
     const handleReplaceDynamicEvidence = (setEvidenceArray: React.Dispatch<React.SetStateAction<string[]>>, index: number) => {
         pickImage((uri) => {
             setEvidenceArray(prev => {
@@ -75,10 +101,7 @@ export default function InspectionScreen() {
 
     // --- GRID RENDERER FOR INVENTORY ---
     const renderInventoryGrid = (evidenceArray: string[], setEvidenceArray: React.Dispatch<React.SetStateAction<string[]>>) => {
-        // Math to keep rows of 3: calculates how many empty dashed boxes to render
         const placeholdersCount = Math.max(3 - evidenceArray.length, (3 - (evidenceArray.length % 3)) % 3);
-        
-        // Combine real images with the empty placeholders
         const gridItems = [...evidenceArray, ...Array(placeholdersCount).fill(null)];
 
         return (
@@ -89,10 +112,8 @@ export default function InspectionScreen() {
                         style={styles.gridImageContainer} 
                         onPress={() => {
                             if (uri) {
-                                // If clicking a real image, replace it
                                 handleReplaceDynamicEvidence(setEvidenceArray, index);
                             } else {
-                                // If clicking a dashed box, add a new one
                                 handleAddDynamicEvidence(setEvidenceArray);
                             }
                         }}
@@ -251,68 +272,48 @@ export default function InspectionScreen() {
           </View>
         </View>
 
-        {/* --- INVENTORY ITEMS (DYNAMIC & INFINITE) --- */}
+        {/* --- INVENTORY ITEMS --- */}
         <View style={styles.inventorySection}>
           <Text style={styles.inventoryOverline}>INVENTORY ITEMS</Text>
           
-          {/* Item 1: Interior Cargo */}
           <View style={styles.card}>
             <Text style={styles.inputLabel}>ITEM CATEGORY</Text>
-            
             <TouchableOpacity 
               style={styles.dropdownFake} 
               activeOpacity={0.7}
               onPress={() => setIsInventory1Expanded(!isInventory1Expanded)}
             >
               <Text style={styles.inputText}>Interior Cargo</Text>
-              <MaterialIcons 
-                name={isInventory1Expanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
-                size={24} 
-                color={theme.colors.outlineVariant} 
-              />
+              <MaterialIcons name={isInventory1Expanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={24} color={theme.colors.outlineVariant} />
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.addEvidenceBtn}
-              onPress={() => handleAddDynamicEvidence(setInventoryEvidence1)}
-            >
+            <TouchableOpacity style={styles.addEvidenceBtn} onPress={() => handleAddDynamicEvidence(setInventoryEvidence1)}>
               <MaterialIcons name="add-a-photo" size={16} color={theme.colors.onSecondary} />
               <Text style={styles.addEvidenceText}>ADD EVIDENCE</Text>
             </TouchableOpacity>
-
             {isInventory1Expanded && renderInventoryGrid(inventoryEvidence1, setInventoryEvidence1)}
           </View>
           
-          {/* Item 2: Seal Verification */}
           <View style={styles.card}>
              <Text style={styles.inputLabel}>ITEM CATEGORY</Text>
-             
              <TouchableOpacity 
                style={styles.dropdownFake}
                activeOpacity={0.7}
                onPress={() => setIsInventory2Expanded(!isInventory2Expanded)}
              >
               <Text style={styles.inputText}>Seal Verification</Text>
-              <MaterialIcons 
-                name={isInventory2Expanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
-                size={24} 
-                color={theme.colors.outlineVariant} 
-              />
+              <MaterialIcons name={isInventory2Expanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={24} color={theme.colors.outlineVariant} />
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.addEvidenceBtn}
-              onPress={() => handleAddDynamicEvidence(setInventoryEvidence2)}
-            >
+            <TouchableOpacity style={styles.addEvidenceBtn} onPress={() => handleAddDynamicEvidence(setInventoryEvidence2)}>
               <MaterialIcons name="add-a-photo" size={16} color={theme.colors.onSecondary} />
               <Text style={styles.addEvidenceText}>ADD EVIDENCE</Text>
             </TouchableOpacity>
-
             {isInventory2Expanded && renderInventoryGrid(inventoryEvidence2, setInventoryEvidence2)}
           </View>
         </View>
 
-        {/* Inspection Summary */}
+        {/* Inspection Summary & E-Signature */}
         <View style={styles.summaryBox}>
           <Text style={styles.summaryTitle}>Inspection Summary</Text>
           
@@ -331,7 +332,32 @@ export default function InspectionScreen() {
             <Text style={[styles.summaryValue, { color: theme.colors.primary }]}>LOW</Text>
           </View>
 
-          <TouchableOpacity activeOpacity={0.8} style={styles.submitWrapper}>
+          {/* 👉 NEW: E-SIGNATURE COMPONENT */}
+          <View style={styles.signatureContainer}>
+            <Text style={styles.inputLabel}>AUTHORIZATION SIGNATURE</Text>
+            <TouchableOpacity 
+              style={[styles.signatureBox, isSigned && styles.signatureBoxSigned]} 
+              onPress={() => setIsSigned(!isSigned)}
+            >
+              {isSigned ? (
+                <View style={styles.signedContent}>
+                  <MaterialIcons name="verified" size={24} color="#4ade80" />
+                  <View>
+                    <Text style={styles.cursiveSignature}>{fullName || 'Signed by Driver'}</Text>
+                    <Text style={styles.timestampText}>Verified: {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
+                  </View>
+                </View>
+              ) : (
+                <>
+                  <MaterialIcons name="draw" size={24} color={theme.colors.outlineVariant} />
+                  <Text style={styles.dashedButtonText}>TAP TO PROVIDE E-SIGNATURE</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* 👉 UPDATED: WIRED BUTTONS */}
+          <TouchableOpacity activeOpacity={0.8} style={styles.submitWrapper} onPress={handleSubmitInspection}>
             <LinearGradient
               colors={[theme.colors.primary, theme.colors.primaryContainer]}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
@@ -341,12 +367,39 @@ export default function InspectionScreen() {
             </LinearGradient>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.saveDraftBtn}>
+          <TouchableOpacity style={styles.saveDraftBtn} onPress={handleSaveDraft}>
              <Text style={styles.saveDraftText}>SAVE DRAFT</Text>
           </TouchableOpacity>
         </View>
 
       </ScrollView>
+      {/* 👉 MOVE STEP 2 HERE (At the bottom of the JSX) */}
+      {showSuccessModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <LinearGradient
+              colors={['#1c2e2a', '#0a1116']}
+              style={styles.modalGradient}
+            >
+              <View style={styles.successIconCircle}>
+                <MaterialIcons name="check" size={40} color="#4ade80" />
+              </View>
+              
+              <Text style={styles.modalTitle}>INSPECTION COMPLETED</Text>
+              <Text style={styles.modalSubtitle}>
+                Manifest MSKU9128374 has been successfully verified and uploaded to the Kargo Cloud Registry.
+              </Text>
+
+              <TouchableOpacity 
+                style={styles.confirmButton} 
+                onPress={handleFinalize}
+              >
+                <Text style={styles.confirmButtonText}>OK, RETURN TO SEARCH</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
+        </View>
+      )}
 
       {/* --- BOTTOM NAVIGATION --- */}
       <View style={styles.bottomNav}>
@@ -406,9 +459,8 @@ const styles = StyleSheet.create({
   imageContainer: { width: '100%', height: 150, marginTop: 8, overflow: 'hidden', borderRadius: 4 },
   fullWidthImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   
-  // --- CHANGED: Updated Grid to wrap infinite rows ---
   imageGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  gridImageContainer: { width: '30%', aspectRatio: 1, marginBottom: 8 }, // 30% allows 3 boxes per row smoothly
+  gridImageContainer: { width: '30%', aspectRatio: 1, marginBottom: 8 },
   gridImage: { flex: 1, width: '100%', height: '100%', backgroundColor: theme.colors.surfaceLowest, resizeMode: 'cover', borderRadius: 4 },
   dashedPlaceholder: { flex: 1, width: '100%', height: '100%', backgroundColor: theme.colors.surfaceLowest, borderWidth: 2, borderColor: theme.colors.outlineVariant, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', borderRadius: 4 },
 
@@ -420,7 +472,7 @@ const styles = StyleSheet.create({
   supplierText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#d7e4ed', marginTop: 4 },
   registerButton: { backgroundColor: 'rgba(42, 54, 61, 0.5)', padding: 16, alignItems: 'center', marginTop: 8 },
 
-  // IMAGE SECTIONS (HEADERS)
+  // IMAGE SECTIONS
   imageSection: { marginBottom: 32 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: theme.colors.outlineVariant, paddingBottom: 12, marginBottom: 16 },
   sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#d7e4ed', letterSpacing: -0.5 },
@@ -439,6 +491,14 @@ const styles = StyleSheet.create({
   summaryLabel: { fontFamily: 'Inter_400Regular', fontSize: 14, color: theme.colors.outlineVariant },
   summaryValue: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#d7e4ed' },
   
+  // 👉 NEW: SIGNATURE STYLES
+  signatureContainer: { marginTop: 24, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: theme.colors.outlineVariant },
+  signatureBox: { height: 80, borderWidth: 1, borderColor: theme.colors.outlineVariant, borderStyle: 'dashed', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 12, backgroundColor: 'rgba(215, 228, 237, 0.02)' },
+  signatureBoxSigned: { borderStyle: 'solid', borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.05)' },
+  signedContent: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  cursiveSignature: { fontFamily: 'Inter_400Regular', fontStyle: 'italic', fontSize: 24, color: '#d7e4ed' },
+  timestampText: { fontFamily: 'Inter_700Bold', fontSize: 9, color: '#4ade80', letterSpacing: 1, marginTop: 4 },
+
   submitWrapper: { marginTop: 24, marginBottom: 12 },
   submitGradient: { padding: 20, alignItems: 'center', justifyContent: 'center' },
   submitText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: theme.colors.surfaceLowest, letterSpacing: 2 },
@@ -450,5 +510,69 @@ const styles = StyleSheet.create({
   navItem: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   navItemActive: { backgroundColor: theme.colors.surfaceHighest },
   navText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#64748b', marginTop: 4, letterSpacing: 1.5 },
-  navTextActive: { color: theme.colors.primary }
+  navTextActive: { 
+    color: theme.colors.primary 
+  }, // <--- ✅ ADD THIS COMMA
+
+  // 👉 MODAL STYLES
+  modalOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(4, 16, 21, 0.95)', 
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+    padding: 24,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 340,
+    borderWidth: 1,
+    borderColor: 'rgba(74, 222, 128, 0.2)',
+    overflow: 'hidden',
+  },
+  modalGradient: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  successIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(74, 222, 128, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#4ade80',
+  },
+  modalTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 20,
+    color: '#4ade80',
+    letterSpacing: 2,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    color: '#d7e4ed',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 32,
+    opacity: 0.8,
+  },
+  confirmButton: {
+    backgroundColor: '#4ade80',
+    width: '100%',
+    padding: 16,
+    alignItems: 'center',
+  },
+  confirmButtonText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 14,
+    color: '#041015',
+    letterSpacing: 1,
+  },
 });

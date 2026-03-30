@@ -1,22 +1,54 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useState, useEffect } from 'react'; // 👉 ADDED: useState, useEffect
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native'; // 👉 ADDED: useRoute
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { theme } from '../theme';
 
-// Mock data for the drafts based on your Stitch design
-const draftItems = [
-  { id: 'MSKU9128374', status: 'RE-INSPECT', time: '2 HOURS AGO', detail: 'SHIP: MAERSK INTEGRITY', border: theme.colors.primary, badgeBg: '#6e0009', badgeText: theme.colors.primary },
-  { id: 'HLXU4402198', status: 'GATE 04', time: '4 HOURS AGO', detail: 'DRIVER: R. SULLIVAN', border: 'transparent', badgeBg: '#1f477b', badgeText: '#a7c8ff' },
-  { id: 'CMAU8821033', status: 'FLAGGED', time: 'YESTERDAY', detail: 'SHIP: NORTH STAR', border: '#6e0009', badgeBg: '#93000a', badgeText: '#ffdad6' },
-  { id: 'TGBU5510294', status: 'GATE 04', time: '2 DAYS AGO', detail: 'DRIVER: M. CHEN', border: 'transparent', badgeBg: '#1f477b', badgeText: '#a7c8ff' },
-];
-
 export default function DraftsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<any>(); 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // 👉 CHANGED: We moved your hardcoded draftItems into a useState hook!
+  // This allows the list to update dynamically when a new draft is saved.
+  const [draftItems, setDraftItems] = useState([
+    { id: 'MSKU9128374', status: 'RE-INSPECT', time: '2 HOURS AGO', detail: 'SHIP: MAERSK INTEGRITY', border: theme.colors.primary, badgeBg: '#6e0009', badgeText: theme.colors.primary },
+    { id: 'HLXU4402198', status: 'GATE 04', time: '4 HOURS AGO', detail: 'DRIVER: R. SULLIVAN', border: 'transparent', badgeBg: '#1f477b', badgeText: '#a7c8ff' },
+    { id: 'CMAU8821033', status: 'FLAGGED', time: 'YESTERDAY', detail: 'SHIP: NORTH STAR', border: '#6e0009', badgeBg: '#93000a', badgeText: '#ffdad6' },
+    { id: 'TGBU5510294', status: 'GATE 04', time: '2 DAYS AGO', detail: 'DRIVER: M. CHEN', border: 'transparent', badgeBg: '#1f477b', badgeText: '#a7c8ff' },
+  ]);
+
+  const filteredDrafts = draftItems.filter(item => 
+    item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.detail.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // 👉 NEW: This listens for new drafts coming from the InspectionScreen
+  useEffect(() => {
+    if (route.params?.newDraft) {
+      
+      // We format the incoming draft to match the styling of your existing drafts
+      const formattedDraft = {
+        id: route.params.newDraft.id,
+        status: route.params.newDraft.type,
+        time: route.params.newDraft.time,
+        detail: route.params.newDraft.ship,
+        border: theme.colors.primary, // Add your signature red border
+        badgeBg: '#6e0009',
+        badgeText: theme.colors.primary
+      };
+
+      // Add the new draft to the very top of the list!
+      setDraftItems(prevDrafts => [formattedDraft, ...prevDrafts]);
+      
+      // Clear the parameter so it doesn't duplicate if the screen re-renders
+      navigation.setParams({ newDraft: undefined });
+    }
+  }, [route.params?.newDraft]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -36,7 +68,24 @@ export default function DraftsScreen() {
         </View>
         <View style={styles.topBarSearch}>
           <MaterialIcons name="search" size={16} color={theme.colors.outlineVariant} />
-          <Text style={styles.topBarSearchText}>ENTER CODE</Text>
+          
+          {/* 👉 NEW: TextInput replaces static Text */}
+          <TextInput 
+            style={styles.topBarSearchInput}
+            placeholder="ENTER CODE"
+            placeholderTextColor={theme.colors.outlineVariant}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="characters"
+            autoCorrect={false}
+          />
+
+          {/* 👉 NEW: 'X' button to reset search */}
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <MaterialIcons name="close" size={16} color={theme.colors.outlineVariant} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -46,14 +95,21 @@ export default function DraftsScreen() {
         {/* Header Section */}
         <View style={styles.headerSection}>
           <Text style={styles.heroText}>DRAFTS</Text>
-          <Text style={styles.heroSubText}>8 PENDING INSPECTIONS</Text>
+          {/* 👉 UPDATED: Now dynamically counts the total drafts! */}
+          <Text style={styles.heroSubText}>{draftItems.length} PENDING INSPECTIONS</Text>
           <View style={styles.headerLine} />
         </View>
 
         {/* Drafts List */}
         <View style={styles.draftsContainer}>
-          {draftItems.map((item, index) => (
-            <TouchableOpacity activeOpacity={0.8} key={index} style={[styles.draftCard, { borderLeftColor: item.border }]}>
+          {filteredDrafts.map((item, index) => (
+            <TouchableOpacity 
+              activeOpacity={0.8} 
+              key={index} 
+              style={[styles.draftCard, { borderLeftColor: item.border }]}
+              // Optional: Let them tap a draft to go back to the Inspection screen!
+              onPress={() => navigation.navigate('Inspection')} 
+            >
               
               <View style={styles.draftInfo}>
                 <View style={styles.badgeRow}>
@@ -107,7 +163,7 @@ export default function DraftsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.surface }, // #09151b
+  container: { flex: 1, backgroundColor: theme.colors.surface }, 
   
   // WATERMARK
   watermarkContainer: { position: 'absolute', bottom: 100, right: -40, opacity: 0.05, zIndex: -1 },
@@ -118,8 +174,27 @@ const styles = StyleSheet.create({
   topBarLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   menuButton: { padding: 4 },
   logoText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 24, color: theme.colors.primary, letterSpacing: -1 },
-  topBarSearch: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#1a262c', paddingHorizontal: 12, paddingVertical: 6 },
-  topBarSearchText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: theme.colors.outlineVariant, letterSpacing: 2 },
+
+  // 👉 UPDATED: Functional Search Bar Styles
+  topBarSearch: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 8, 
+    backgroundColor: '#1a262c', 
+    paddingHorizontal: 12, 
+    paddingVertical: 8,
+    borderRadius: 4,
+  },
+  
+  topBarSearchInput: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#d7e4ed',
+    letterSpacing: 2,
+    minWidth: 100, 
+    padding: 0,
+    height: 20,
+  },
 
   scrollContent: { paddingHorizontal: 24, paddingBottom: 100, paddingTop: 16 },
 
@@ -149,5 +224,5 @@ const styles = StyleSheet.create({
   navItem: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 8 },
   navItemActive: { borderTopWidth: 2, borderTopColor: theme.colors.primaryContainer },
   navText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: theme.colors.outlineVariant, marginTop: 4, letterSpacing: 1.5 },
-  navTextActive: { color: theme.colors.primary }
-});
+  navTextActive: { color: theme.colors.primary },
+}); 
