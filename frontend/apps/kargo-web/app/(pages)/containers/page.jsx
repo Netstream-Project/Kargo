@@ -1,14 +1,35 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+// 👉 ADDED THESE IMPORTS (Crucial to prevent crash)
+import { useSearchParams, useRouter } from "next/navigation"; 
 import ContainerCard from "../../components/containers/ContainerCard";
 
 export default function ContainersPage() {
   const [containers, setContainers] = useState([]);
+  const [showToast, setShowToast] = useState(false);
   
-  // 1. Grab the search query from the URL
+  // 👉 INITIALIZED HOOKS
+  const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Params for Search and Approval
   const searchQuery = searchParams.get("q") || "";
+  const isApproved = searchParams.get("approved");
+
+  // --- EFFECT: SUCCESS TOAST LOGIC ---
+  useEffect(() => {
+    if (isApproved === "true") {
+      setShowToast(true);
+      
+      const timer = setTimeout(() => {
+        setShowToast(false);
+        // Clean up URL so it doesn't show again on refresh
+        router.replace("/containers");
+      }, 4000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isApproved, router]);
 
   // Mock data representing your API payload
   const mockContainers = [
@@ -37,23 +58,33 @@ export default function ContainersPage() {
 
     loadContainers();
 
+    // Listen for updates from the modal
     window.addEventListener('kargo_update', loadContainers);
     return () => window.removeEventListener('kargo_update', loadContainers);
   }, []);
 
-  // 2. FILTER LOGIC: Only keep containers that match the search query
-  const filteredContainers = containers.filter((container) => 
-    container.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    container.status.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
     <div className="px-10 pb-20 mt-8">
+      {/* 👉 SUCCESS TOAST POPUP */}
+      {showToast && (
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="bg-[#142026] text-white px-8 py-4 rounded-xl shadow-2xl flex items-center gap-4 border border-white/10">
+            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <span className="material-symbols-outlined text-white text-xl">check</span>
+            </div>
+            <div>
+              <p className="font-headline font-black uppercase tracking-tight text-sm">Report Approved</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">KRG-44102 Manifest Verified</p>
+            </div>
+            <button onClick={() => setShowToast(false)} className="ml-4 opacity-50 hover:opacity-100">
+              <span className="material-symbols-outlined text-sm">close</span>
+            </button>
+          </div>
+        </div>
+      )}
       {/* Responsive Grid Setup */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-        
-        {/* Render the FILTERED list */}
-        {filteredContainers.map((container, idx) => (
+        {containers.map((container, idx) => (
           <ContainerCard
             key={idx}
             id={container.id}
@@ -62,15 +93,6 @@ export default function ContainersPage() {
             photoCount={container.photoCount}
           />
         ))}
-
-        {/* Empty State if search finds nothing */}
-        {filteredContainers.length === 0 && (
-          <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-400">
-             <span className="material-symbols-outlined text-6xl mb-4">search_off</span>
-             <p className="font-bold text-lg">No containers found matching "{searchQuery}"</p>
-          </div>
-        )}
-
       </div>
     </div>
   );

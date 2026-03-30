@@ -1,4 +1,8 @@
+"use client";
+import { useRouter } from "next/navigation"; 
+import React, { useState } from "react";
 import Link from "next/link";
+import PDFPreviewModal from "../../../components/containers/PDFPreviewModal";
 
 // --- MOCK DATA ---
 const reportDetails = {
@@ -58,6 +62,18 @@ const timelineEvents = [
 // -----------------
 
 export default function ReportPage() {
+  const router = useRouter();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const handleExportPDF = () => {
+   setIsPreviewOpen(true);
+  };
+
+  const handleApprove = () => {
+    // This sends the user back with the trigger for the success popup
+    router.push("/containers?approved=true");
+  };
+
   return (
     <div className="p-8 max-w-[1600px] mx-auto bg-[#F8F9FA] min-h-screen">
       
@@ -76,10 +92,16 @@ export default function ReportPage() {
           </div>
         </div>
         <div className="flex gap-3">
-          <button className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider rounded shadow-sm hover:bg-slate-50">
+          <button 
+            onClick={handleExportPDF}
+            className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider rounded shadow-sm hover:bg-slate-50 transition-all"
+          >
             Export PDF
           </button>
-          <button className="px-6 py-2.5 bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded shadow-sm hover:bg-blue-800">
+          <button 
+            onClick={handleApprove}
+            className="px-6 py-2.5 bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded shadow-sm hover:bg-blue-800 active:scale-95 transition-all"
+          >
             Approve Report
           </button>
         </div>
@@ -314,7 +336,11 @@ export default function ReportPage() {
             })}
          </div>
       </div>
-
+    <PDFPreviewModal 
+        isOpen={isPreviewOpen} 
+        onClose={() => setIsPreviewOpen(false)} 
+        data={reportDetails} 
+      />
     </div>
   );
 }

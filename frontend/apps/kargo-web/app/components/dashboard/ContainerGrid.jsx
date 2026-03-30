@@ -1,11 +1,13 @@
+"use client";
 import React from 'react';
+import Link from 'next/link';
 
 export default function ContainerGrid() {
   // DRY Array for our recent containers
   const recentContainers = [
     { id: 'KRG-90210', photos: 12, status: 'normal' },
     { id: 'KRG-88321', photos: 8, status: 'normal' },
-    { id: 'KRG-77211', status: 'pending' }, // Error state
+    { id: 'KRG-77211', status: 'pending' }, 
     { id: 'KRG-44122', photos: 24, status: 'normal' },
     { id: 'KRG-33900', photos: 5, status: 'normal' },
   ];
@@ -29,17 +31,17 @@ export default function ContainerGrid() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         
         {recentContainers.map((container, idx) => (
-          <div key={idx} className="group cursor-pointer">
+          /* 👉 FIXED: This now points to your actual /containers/report folder */
+          <Link href="/containers/report" key={idx} className="group cursor-pointer block">
             <div className="bg-surface-container-low rounded-xl p-6 flex flex-col items-center justify-center transition-all group-hover:bg-white group-hover:shadow-md border border-transparent group-hover:border-outline-variant/20 h-48">
               
-              {/* Icon Logic based on Status */}
               <div className="mb-4">
-  {container.status === 'pending' ? (
-    <span className="material-symbols-outlined text-[#460003] text-5xl" style={{ fontVariationSettings: '"FILL" 1' }}>folder_special</span>
-  ) : (
-    <span className="material-symbols-outlined text-[#3a5f94] text-5xl" style={{ fontVariationSettings: '"FILL" 1' }}>folder</span>
-  )}
-</div>
+                {container.status === 'pending' ? (
+                  <span className="material-symbols-outlined text-[#460003] text-5xl" style={{ fontVariationSettings: '"FILL" 1' }}>folder_special</span>
+                ) : (
+                  <span className="material-symbols-outlined text-[#3a5f94] text-5xl" style={{ fontVariationSettings: '"FILL" 1' }}>folder</span>
+                )}
+              </div>
 
               <span className="font-label text-tertiary font-bold tracking-tight text-sm mb-2">{container.id}</span>
               
@@ -59,16 +61,15 @@ export default function ContainerGrid() {
               )}
 
             </div>
-          </div>
+          </Link> 
         ))}
 
-        {/* Add New Container Button */}
-        <div className="group cursor-pointer">
-          <div className="bg-surface border-2 border-dashed border-outline-variant rounded-xl p-6 flex flex-col items-center justify-center transition-all hover:bg-surface-container-low hover:border-secondary h-48">
-            <span className="material-symbols-outlined text-outline group-hover:text-secondary text-5xl mb-4">create_new_folder</span>
-            <span className="font-label text-outline group-hover:text-secondary font-bold tracking-tight text-xs uppercase">New Entry</span>
+   <Link href="/containers?action=new" className="group cursor-pointer block">
+          <div className="bg-transparent border-2 border-dashed border-[#c3c6d1] rounded-xl p-6 flex flex-col items-center justify-center transition-all hover:bg-white hover:border-[#3a5f94] h-48">
+            <span className="material-symbols-outlined text-[#c3c6d1] group-hover:text-[#3a5f94] text-5xl mb-4 transition-colors">create_new_folder</span>
+            <span className="font-headline text-[#737780] group-hover:text-[#3a5f94] font-bold tracking-widest text-[10px] uppercase transition-colors">New Entry</span>
           </div>
-        </div>
+        </Link>
 
       </div>
     </section>

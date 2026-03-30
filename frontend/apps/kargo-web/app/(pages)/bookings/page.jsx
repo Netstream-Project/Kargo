@@ -7,19 +7,7 @@ import OutgoingVesselsTable from "../../components/bookings/OutgoingVesselsTable
 import InspectionSchedule from "../../components/bookings/InspectionSchedule";
 import NewVesselModal from "../../components/bookings/NewVesselModal";
 
-// --- MOCK DATA ---
-const incomingVessels = [
-  { name: "MARSK VALIANT", id: "IMO 9733454", status: "Departing", arrivalDate: "Oct 24, 14:30", arrivalSector: "Sector 4A Entry", priority: false, eta: "2h 15m", etaStatus: "On Course", items: "4,200" },
-  { name: "APL SINGAPORE", id: "IMO 9345221", status: "In Port", arrivalDate: "Oct 23, 09:15", arrivalSector: "Priority Docking", priority: true, eta: "At Berth", etaStatus: "Moored", items: "1,850" },
-  { name: "MSC OSCAR", id: "IMO 9703679", status: "Departing", arrivalDate: "Oct 26, 22:00", arrivalSector: "Deep Sea Corridor", priority: false, eta: "14h 20m", etaStatus: "Delayed", items: "19,224" }
-];
-
-const outgoingVessels = [
-  { name: "HMM ROTTERDAM", bay: "Bay 12 North", status: "Departing", departureDate: "Oct 24, 2024", departureStatus: "Scheduled", confirmed: false, timeOut: "2h 15m", timeOutStatus: "Clearance Pending", items: "8,450" },
-  { name: "ZIM CALIFORNIA", bay: "Bay 09 West", status: "Loading", departureDate: "Oct 26, 2024", departureStatus: "Confirmed", confirmed: true, timeOut: "2 Days 4h", timeOutStatus: "Post-Loading Sync", items: "3,120" },
-  { name: "ONE STORK", bay: "Dry Dock 2", status: "Ready for Departure", departureDate: "Oct 25, 2024", departureStatus: "Awaiting Tug", confirmed: false, timeOut: "14h 20m", timeOutStatus: "Cargo Manifesting", items: "12,600" }
-];
-
+// Schedule can stay static since we aren't adding to it right now
 const scheduleTasks = [
   { id: "MSCU-90214", slot: "08:15 — 08:45", inspector: "John Smith", eta: "2h 15m", progress: 0, status: "Scheduled" },
   { id: "ZIMU-11229", slot: "09:30 — 10:15", inspector: "Anya Miller", eta: "45m", progress: 45, status: "In Progress" },
@@ -28,8 +16,29 @@ const scheduleTasks = [
 ];
 
 export default function BookingsPage() {
-  // 1. Add state for the modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 1. Move the mock data into React State so it can be updated!
+  const [incomingVessels, setIncomingVessels] = useState([
+    { name: "MARSK VALIANT", id: "IMO 9733454", status: "Departing", arrivalDate: "Oct 24, 14:30", arrivalSector: "Sector 4A Entry", priority: false, eta: "2h 15m", etaStatus: "On Course", items: "4,200" },
+    { name: "APL SINGAPORE", id: "IMO 9345221", status: "In Port", arrivalDate: "Oct 23, 09:15", arrivalSector: "Priority Docking", priority: true, eta: "At Berth", etaStatus: "Moored", items: "1,850" },
+    { name: "MSC OSCAR", id: "IMO 9703679", status: "Departing", arrivalDate: "Oct 26, 22:00", arrivalSector: "Deep Sea Corridor", priority: false, eta: "14h 20m", etaStatus: "Delayed", items: "19,224" }
+  ]);
+
+  const [outgoingVessels, setOutgoingVessels] = useState([
+    { name: "HMM ROTTERDAM", bay: "Bay 12 North", status: "Departing", departureDate: "Oct 24, 2024", departureStatus: "Scheduled", confirmed: false, timeOut: "2h 15m", timeOutStatus: "Clearance Pending", items: "8,450" },
+    { name: "ZIM CALIFORNIA", bay: "Bay 09 West", status: "Loading", departureDate: "Oct 26, 2024", departureStatus: "Confirmed", confirmed: true, timeOut: "2 Days 4h", timeOutStatus: "Post-Loading Sync", items: "3,120" },
+    { name: "ONE STORK", bay: "Dry Dock 2", status: "Ready for Departure", departureDate: "Oct 25, 2024", departureStatus: "Awaiting Tug", confirmed: false, timeOut: "14h 20m", timeOutStatus: "Cargo Manifesting", items: "12,600" }
+  ]);
+
+  // 2. The function that catches the data from the Modal
+  const handleAddVessel = (newVessel, type) => {
+    if (type === 'incoming') {
+      setIncomingVessels([newVessel, ...incomingVessels]);
+    } else {
+      setOutgoingVessels([newVessel, ...outgoingVessels]);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-[#F8F9FA] overflow-hidden">
@@ -48,7 +57,6 @@ export default function BookingsPage() {
             </div>
             
             <div className="flex items-center gap-4">
-              {/* 2. Attach the onClick handler to open the modal */}
               <button 
                 onClick={() => setIsModalOpen(true)}
                 className="bg-[#142026] text-white px-6 py-3 rounded font-bold text-xs uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center gap-2 mr-4"
@@ -56,10 +64,10 @@ export default function BookingsPage() {
                 <span className="material-symbols-outlined text-sm">add</span> New Vessel
               </button>
               
-              {/* Stats Cards */}
+              {/* Stats Cards - Dynamically tracking active vessels */}
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#3a5f94] flex flex-col">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Vessels</span>
-                <span className="text-2xl font-black text-[#142026]">24</span>
+                <span className="text-2xl font-black text-[#142026]">{incomingVessels.length + outgoingVessels.length}</span>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#460003] flex flex-col">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Critical ETA</span>
@@ -69,6 +77,7 @@ export default function BookingsPage() {
           </div>
 
           <div className="flex flex-col gap-10">
+            {/* Pass the state to the tables */}
             <IncomingVesselsTable vessels={incomingVessels} />
             <OutgoingVesselsTable vessels={outgoingVessels} />
             <InspectionSchedule schedule={scheduleTasks} />
@@ -77,10 +86,11 @@ export default function BookingsPage() {
         </div>
       </main>
 
-      {/* 3. Render the Modal */}
+      {/* 3. Render the Modal and pass down the handler */}
       <NewVesselModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
+        onAddVessel={handleAddVessel}
       />
     </div>
   );
