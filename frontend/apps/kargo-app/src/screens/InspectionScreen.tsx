@@ -206,7 +206,7 @@ export default function InspectionScreen() {
 
         {/* Suppliers List */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>SUPPLIERS LIST</Text>
+          <Text style={styles.cardTitle}>CONTAINERS LIST</Text>
           <Text style={styles.inputLabel}>AUTHORIZED PARTNERS & MANIFEST</Text>
           
           {[
