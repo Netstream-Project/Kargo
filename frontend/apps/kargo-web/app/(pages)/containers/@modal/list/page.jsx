@@ -23,7 +23,7 @@ export default function SupplierListModal() {
               <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>inventory_2</span>
             </div>
             <div>
-              <h2 className="text-2xl font-black tracking-tighter text-[#142026] leading-none">Supplier Manifest: KRG-44102</h2>
+              <h2 className="text-2xl font-black tracking-tighter text-[#142026] leading-none">Container Manifest: KRG-44102</h2>
               <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mt-1">Manifest Verification Loop // Terminal 4A</p>
             </div>
           </div>

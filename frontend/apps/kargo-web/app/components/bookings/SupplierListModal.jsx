@@ -59,7 +59,7 @@ export default function SupplierListModal({ isOpen, onClose, onSubmit, vesselId 
               </div>
               <div>
                 <h2 className="text-2xl font-black tracking-tighter text-[#142026] leading-none">
-                  Supplier Manifest: {vesselId || "KRG-44102"}
+                  Container Manifest: {vesselId || "KRG-44102"}
                 </h2>
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mt-1">Manifest Verification Loop // Terminal 4A</p>
               </div>

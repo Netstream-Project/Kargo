@@ -245,7 +245,7 @@ export default function ReportPage() {
                 </Link>
                 <Link href="/containers/list" className="w-full">
                     <button className="w-full py-3 bg-red-900 text-white rounded flex justify-center items-center gap-2 text-xs font-bold uppercase tracking-wider hover:bg-red-950">
-                    <span className="material-symbols-outlined text-sm">list_alt</span> View Supplier List
+                    <span className="material-symbols-outlined text-sm">list_alt</span> View Container List
                     </button>
                 </Link>
              </div>
