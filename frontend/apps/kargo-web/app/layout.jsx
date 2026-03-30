@@ -1,5 +1,7 @@
 import "./globals.css";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: "KARGO - Logistics Management",
   description: "Enterprise container and fleet management",
