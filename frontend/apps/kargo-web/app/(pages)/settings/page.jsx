@@ -8,23 +8,23 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState("light");
 
   return (
-    <div className="flex min-h-screen bg-[#f9f9f9]">
+    <div className="flex h-screen bg-[#f9f9f9] overflow-hidden">
       
-      {/* Sidebar Navigation */}
       <Sidebar />
 
-      {/* Main Content Area */}
-      <main className="flex-grow p-12 max-w-7xl mx-auto w-full">
-        
-        {/* Header Section */}
-        <header className="mb-16">
-          <span className="text-[#460003] font-headline font-bold text-sm tracking-[0.2em] uppercase">
-            System Configuration
-          </span>
-          <h2 className="text-5xl font-headline font-black tracking-tighter text-[#142026] mt-2">
-            Account Settings
-          </h2>
-        </header>
+      <main className="flex-1 overflow-y-auto">
+        {/* Moved the padding (p-12) to this inner div, just like Bookings */}
+        <div className="p-12 max-w-7xl mx-auto w-full min-h-screen">
+          
+          {/* Header Section */}
+          <header className="mb-16">
+            <span className="text-[#460003] font-headline font-bold text-sm tracking-[0.2em] uppercase">
+              System Configuration
+            </span>
+            <h2 className="text-5xl font-headline font-black tracking-tighter text-[#142026] mt-2">
+              Account Settings
+            </h2>
+          </header>
 
         <div className="space-y-12">
           
@@ -159,6 +159,7 @@ export default function SettingsPage() {
 
             </div>
           </section>
+          </div>
 
         </div>
       </main>
