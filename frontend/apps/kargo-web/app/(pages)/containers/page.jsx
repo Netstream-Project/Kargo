@@ -63,6 +63,14 @@ export default function ContainersPage() {
     return () => window.removeEventListener('kargo_update', loadContainers);
   }, []);
 
+  // Filter the containers based on the search query
+  const filteredContainers = containers.filter((container) => {
+    return (
+      container.id.toLowerCase().includes(searchQuery) ||
+      container.status.toLowerCase().includes(searchQuery)
+    );
+  });
+
   return (
     <div className="px-10 pb-20 mt-8">
       {/* 👉 SUCCESS TOAST POPUP */}
@@ -83,8 +91,9 @@ export default function ContainersPage() {
         </div>
       )}
       {/* Responsive Grid Setup */}
+      {filteredContainers.length > 0 ? (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-        {containers.map((container, idx) => (
+        {filteredContainers.map((container, idx) => (
           <ContainerCard
             key={idx}
             id={container.id}
@@ -94,6 +103,14 @@ export default function ContainersPage() {
           />
         ))}
       </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-24 bg-white rounded-xl shadow-sm border border-slate-200 border-dashed">
+          <span className="material-symbols-outlined text-slate-300 text-6xl mb-4">search_off</span>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">No containers found</h3>
+          <p className="text-sm text-slate-500">We couldn't find anything matching "{searchParams.get("q")}"</p>
+        </div>
+      )}
+
     </div>
   );
 }
