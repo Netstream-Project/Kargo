@@ -1,6 +1,15 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import ContainerCard from "../../components/containers/ContainerCard";
 
 export default function ContainersPage() {
+  const [containers, setContainers] = useState([]);
+  
+  // 1. Grab the search query from the URL
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("q") || "";
+
   // Mock data representing your API payload
   const mockContainers = [
     { id: "KRG-44102", status: "In Transit", updatedAt: "Updated 2h ago", photoCount: 8 },
@@ -14,19 +23,54 @@ export default function ContainersPage() {
     { id: "KRG-90034", status: "Delayed", updatedAt: "Alert triggered 40m ago", photoCount: 15 },
   ];
 
+  // Load from local storage so the modal and this page can share data
+  useEffect(() => {
+    const loadContainers = () => {
+      const saved = localStorage.getItem("kargo_containers");
+      if (saved) {
+        setContainers(JSON.parse(saved));
+      } else {
+        setContainers(mockContainers);
+        localStorage.setItem("kargo_containers", JSON.stringify(mockContainers));
+      }
+    };
+
+    loadContainers();
+
+    window.addEventListener('kargo_update', loadContainers);
+    return () => window.removeEventListener('kargo_update', loadContainers);
+  }, []);
+
+  // 2. FILTER LOGIC: Only keep containers that match the search query
+  const filteredContainers = containers.filter((container) => 
+    container.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    container.status.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="px-10 pb-20 mt-8">
       {/* Responsive Grid Setup */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-        {mockContainers.map((container) => (
+        
+        {/* Render the FILTERED list */}
+        {filteredContainers.map((container, idx) => (
           <ContainerCard
-            key={container.id}
+            key={idx}
             id={container.id}
             status={container.status}
             updatedAt={container.updatedAt}
             photoCount={container.photoCount}
           />
         ))}
+
+        {/* Empty State if search finds nothing */}
+        {filteredContainers.length === 0 && (
+          <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-400">
+             <span className="material-symbols-outlined text-6xl mb-4">search_off</span>
+             <p className="font-bold text-lg">No containers found matching "{searchQuery}"</p>
+          </div>
+        )}
+
       </div>
     </div>
   );
