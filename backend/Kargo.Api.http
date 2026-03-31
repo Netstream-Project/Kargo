@@ -1,6 +1,0 @@
-@Kargo.Api_HostAddress = http://localhost:5010
-
-GET {{Kargo.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
